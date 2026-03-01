@@ -28,7 +28,7 @@ struct CalendarMoonView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r: 10, g: 10, b: 46).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 20) {
                         monthNavigator
@@ -43,7 +43,7 @@ struct CalendarMoonView: View {
             }
             .navigationTitle("Moon Calendar")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Color("0A0A2E"), for: .navigationBar)
+            .toolbarBackground(Color(r: 10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

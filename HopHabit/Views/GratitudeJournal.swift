@@ -132,7 +132,7 @@ struct JournalSheetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r: 10, g: 10, b: 46).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 24) {
                         dateHeader
@@ -182,7 +182,7 @@ struct JournalSheetView: View {
                 isPastDay ? "Looking Back" : (isEditing ? "Edit Journal" : "Gratitude Journal")
             )
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("0A0A2E"), for: .navigationBar)
+            .toolbarBackground(Color(r: 10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

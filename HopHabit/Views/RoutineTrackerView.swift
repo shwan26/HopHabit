@@ -111,7 +111,7 @@ struct RoutineTrackerView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r: 10, g: 10, b: 46).ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -203,7 +203,7 @@ struct RoutineTrackerView: View {
             }
             .navigationTitle("Practice")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Color("0A0A2E"), for: .navigationBar)
+            .toolbarBackground(Color(r: 10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .onAppear {
                 if selectedRoutine == nil { selectedRoutine = routines.first }
@@ -588,7 +588,7 @@ struct RoutineTrackerView: View {
     private var addRoutineSheet: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r: 10, g: 10, b: 46).ignoresSafeArea()
                 VStack(spacing: 16) {
                     TextField("Routine name (e.g. Piano)", text: $newRoutineName)
                         .textFieldStyle(.plain)
@@ -607,7 +607,7 @@ struct RoutineTrackerView: View {
             }
             .navigationTitle("New Routine")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("0A0A2E"), for: .navigationBar)
+            .toolbarBackground(Color(r: 10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
