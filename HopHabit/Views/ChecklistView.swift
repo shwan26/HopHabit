@@ -20,6 +20,7 @@ struct ChecklistView: View {
     @State private var newHabitTitle = ""
     @State private var showTimeChart = false
     @State private var timerTick = Date()  // Forces UI refresh every second
+    @State private var showDemoBanner = false
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -35,7 +36,7 @@ struct ChecklistView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r:10, g: 10, b: 46).ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
@@ -109,11 +110,70 @@ struct ChecklistView: View {
                     }
                     .padding()
                 }
+
+                // Demo loaded banner
+                if showDemoBanner {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: 10) {
+                            Text("🎬").font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Demo Mode Active!")
+                                    .font(.subheadline.bold()).foregroundStyle(.white)
+                                Text("Habits, tasks & journal pre-loaded")
+                                    .font(.caption).foregroundStyle(.white.opacity(0.7))
+                            }
+                            Spacer()
+                        }
+                        .padding(14)
+                        .background(Color.indigo.opacity(0.92), in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal).padding(.bottom, 24)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    .zIndex(20)
+                }
             }
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Color("0A0A2E"), for: .navigationBar)
+            .toolbarBackground(Color(r:10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button {
+                            DemoManager.loadDemo(context: context)
+                            withAnimation(.spring()) { showDemoBanner = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                withAnimation { showDemoBanner = false }
+                            }
+                        } label: {
+                            Label("Load Demo Day", systemImage: "play.rectangle.fill")
+                        }
+                        Button(role: .destructive) {
+                            DemoManager.resetDemo(context: context)
+                        } label: {
+                            Label("Reset Demo", systemImage: "arrow.counterclockwise")
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Text("🎬")
+                            Text("Demo")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(
+                            Capsule().fill(
+                                LinearGradient(colors: [Color(r: 100, g: 60, b: 220),
+                                                        Color(r: 60, g: 20, b: 160)],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                        )
+                        .shadow(color: Color(r: 100, g: 60, b: 220).opacity(0.5), radius: 6, y: 2)
+                    }
+                }
+            }
             .sheet(isPresented: $showAddHabit) {
                 AddHabitSheet(isPresented: $showAddHabit)
             }
@@ -329,7 +389,7 @@ struct HabitTimeChartView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r:10, g: 10, b: 46).ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
                         // Range picker
@@ -508,7 +568,7 @@ struct HabitTimeChartView: View {
             }
             .navigationTitle("Time Stats")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("0A0A2E"), for: .navigationBar)
+            .toolbarBackground(Color(r:10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -538,7 +598,7 @@ struct AddHabitSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("0A0A2E").ignoresSafeArea()
+                Color(r:10, g: 10, b: 46).ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 20) {
                     TextField("Habit name", text: $title)
                         .textFieldStyle(.plain)

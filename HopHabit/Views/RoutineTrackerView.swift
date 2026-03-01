@@ -105,6 +105,7 @@ struct RoutineTrackerView: View {
     @State private var saveButtonScale: CGFloat    = 1.0
     @State private var showAlmostThere   = false
     @State private var almostThereMsg    = ""
+    @State private var showDemoBanner    = false
 
     private let totalGoalHours = 1000
 
@@ -200,11 +201,75 @@ struct RoutineTrackerView: View {
                     }
                     .zIndex(2)
                 }
+
+                // Demo loaded banner
+                if showDemoBanner {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: 10) {
+                            Text("🎬").font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Demo Mode Active!")
+                                    .font(.subheadline.bold()).foregroundStyle(.white)
+                                Text("Piano Practice loaded — 47h progress")
+                                    .font(.caption).foregroundStyle(.white.opacity(0.7))
+                            }
+                            Spacer()
+                        }
+                        .padding(14)
+                        .background(Color.indigo.opacity(0.92), in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal).padding(.bottom, 24)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    .zIndex(3)
+                }
             }
             .navigationTitle("Practice")
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(Color(r: 10, g: 10, b: 46), for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button {
+                            DemoManager.loadDemo(context: context)
+                            // Auto-select the demo routine
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                selectedRoutine = routines.first
+                            }
+                            withAnimation(.spring()) { showDemoBanner = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                withAnimation { showDemoBanner = false }
+                            }
+                        } label: {
+                            Label("Load Demo Day", systemImage: "play.rectangle.fill")
+                        }
+                        Button(role: .destructive) {
+                            DemoManager.resetDemo(context: context)
+                            selectedRoutine = nil
+                        } label: {
+                            Label("Reset Demo", systemImage: "arrow.counterclockwise")
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Text("🎬")
+                            Text("Demo")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(
+                            Capsule().fill(
+                                LinearGradient(colors: [Color(r: 100, g: 60, b: 220),
+                                                        Color(r: 60, g: 20, b: 160)],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                        )
+                        .shadow(color: Color(r: 100, g: 60, b: 220).opacity(0.5), radius: 6, y: 2)
+                    }
+                }
+            }
             .onAppear {
                 if selectedRoutine == nil { selectedRoutine = routines.first }
             }

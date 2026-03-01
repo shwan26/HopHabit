@@ -44,6 +44,10 @@ struct HomeWorldView: View {
     @State private var flyingGrains: [RiceGrain]   = []
     @State private var moonShake          = false
 
+    // Demo mode
+    @State private var showDemoBanner     = false
+    @State private var isDemoLoading      = false
+
     // ── FIXED: state is now an @State var, initialized safely in .onAppear
     //    Never call context.insert() inside a computed property — SwiftUI
     //    re-evaluates computed vars on every render, which would create
@@ -112,6 +116,28 @@ struct HomeWorldView: View {
                     quoteBanner
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
+
+                // Demo loaded banner
+                if showDemoBanner {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: 10) {
+                            Text("🎬").font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Demo Mode Active!")
+                                    .font(.subheadline.bold()).foregroundStyle(.white)
+                                Text("Habits, tasks, streak & journal pre-loaded")
+                                    .font(.caption).foregroundStyle(.white.opacity(0.7))
+                            }
+                            Spacer()
+                        }
+                        .padding(14)
+                        .background(Color.indigo.opacity(0.92), in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal).padding(.bottom, 24)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    .zIndex(20)
+                }
             }
             .navigationTitle("")
         }
@@ -149,6 +175,36 @@ struct HomeWorldView: View {
                     .foregroundStyle(.white.opacity(0.5))
             }
             Spacer()
+
+            // 🎬 Demo button — always visible in header
+            Menu {
+                Button { loadDemo() } label: {
+                    Label("Load Demo Day", systemImage: "play.rectangle.fill")
+                }
+                Button(role: .destructive) { resetDemo() } label: {
+                    Label("Reset Demo", systemImage: "arrow.counterclockwise")
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("🎬")
+                        .font(.system(size: 13))
+                    Text("Demo")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 7)
+                .background(
+                    Capsule().fill(
+                        LinearGradient(
+                            colors: [Color(r: 100, g: 60, b: 220), Color(r: 60, g: 20, b: 160)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        )
+                    )
+                )
+                .shadow(color: Color(r: 100, g: 60, b: 220).opacity(0.45), radius: 6, y: 2)
+            }
+
+            // Rice badge
             HStack(spacing: 6) {
                 Text("🌾").font(.system(size: 18))
                 Text("\(state?.totalRiceEarned ?? 0)")
@@ -405,6 +461,25 @@ struct HomeWorldView: View {
         }
     }
 
+    // MARK: ── Demo Mode ───────────────────────────────────────────────────
+
+    private func loadDemo() {
+        guard !isDemoLoading else { return }
+        isDemoLoading = true
+        DemoManager.loadDemo(context: context)
+        ensureProgressState()
+        isDemoLoading = false
+        withAnimation(.spring()) { showDemoBanner = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation { showDemoBanner = false }
+        }
+    }
+
+    private func resetDemo() {
+        DemoManager.resetDemo(context: context)
+        progressState = nil
+    }
+
     // MARK: ── Complete Day ────────────────────────────────────────────────
 
     private func completeDay() {
@@ -563,7 +638,7 @@ struct OnMoonCharacterView: View {
                         Text(emoji)
                             .font(.system(size: 12))
                             .opacity(0.85)
-                            .offset( y: 0)
+                            .offset( y: spriteSize * 0.36)
                     }
                 }
                 .overlay(alignment: .topTrailing) {
@@ -571,7 +646,7 @@ struct OnMoonCharacterView: View {
                         Image(systemName: badge)
                             .foregroundStyle(.green)
                             .font(.system(size: 10))
-                            .offset(y: 0)
+                            .offset(y: spriteSize * 0.35)
                     }
                 }
             }

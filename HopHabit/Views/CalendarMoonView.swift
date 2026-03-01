@@ -15,6 +15,7 @@ import SwiftData
 // MARK: - CalendarMoonView
 
 struct CalendarMoonView: View {
+    @Environment(\.modelContext) private var context
     @Query private var allTasks: [TaskItem]
     @Query private var progressStates: [ProgressState]
     @Query private var journals: [GratitudeJournal]
@@ -22,6 +23,7 @@ struct CalendarMoonView: View {
     @State private var displayedMonth = Date()
     @State private var selectedDate: Date? = nil
     @State private var showJournalSheet = false
+    @State private var showDemoBanner   = false
 
     private var state: ProgressState? { progressStates.first }
 
@@ -40,6 +42,28 @@ struct CalendarMoonView: View {
                     }
                     .padding()
                 }
+
+                // Demo loaded banner
+                if showDemoBanner {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: 10) {
+                            Text("🎬").font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Demo Mode Active!")
+                                    .font(.subheadline.bold()).foregroundStyle(.white)
+                                Text("14-day streak, journal & stats pre-loaded")
+                                    .font(.caption).foregroundStyle(.white.opacity(0.7))
+                            }
+                            Spacer()
+                        }
+                        .padding(14)
+                        .background(Color.indigo.opacity(0.92), in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal).padding(.bottom, 24)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    .zIndex(20)
+                }
             }
             .navigationTitle("Moon Calendar")
             .navigationBarTitleDisplayMode(.large)
@@ -47,11 +71,48 @@ struct CalendarMoonView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        selectedDate = Date()
-                        showJournalSheet = true
-                    } label: {
-                        Image(systemName: "book.fill").foregroundStyle(.purple)
+                    HStack(spacing: 10) {
+                        // Journal shortcut
+                        Button {
+                            selectedDate = Date()
+                            showJournalSheet = true
+                        } label: {
+                            Image(systemName: "book.fill").foregroundStyle(.purple)
+                        }
+                        // Demo menu
+                        Menu {
+                            Button {
+                                DemoManager.loadDemo(context: context)
+                                withAnimation(.spring()) { showDemoBanner = true }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                    withAnimation { showDemoBanner = false }
+                                }
+                            } label: {
+                                Label("Load Demo Day", systemImage: "play.rectangle.fill")
+                            }
+                            Button(role: .destructive) {
+                                DemoManager.resetDemo(context: context)
+                            } label: {
+                                Label("Reset Demo", systemImage: "arrow.counterclockwise")
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Text("🎬")
+                                Text("Demo")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                            .padding(.horizontal, 12).padding(.vertical, 7)
+                            .background(
+                                Capsule().fill(
+                                    LinearGradient(colors: [Color(r: 100, g: 60, b: 220),
+                                                            Color(r: 60, g: 20, b: 160)],
+                                                   startPoint: .topLeading,
+                                                   endPoint: .bottomTrailing)
+                                )
+                            )
+                            .shadow(color: Color(r: 100, g: 60, b: 220).opacity(0.5), radius: 6, y: 2)
+                        }
                     }
                 }
             }
@@ -88,7 +149,7 @@ struct CalendarMoonView: View {
 
     private var weekdayHeader: some View {
         HStack(spacing: 0) {
-            ForEach(["S","M","T","W","T","F","S"], id: \.self) { d in
+            ForEach(Array(zip(0..., ["S","M","T","W","T","F","S"])), id: \.0) { _, d in
                 Text(d)
                     .font(.caption.bold())
                     .foregroundStyle(.white.opacity(0.4))
