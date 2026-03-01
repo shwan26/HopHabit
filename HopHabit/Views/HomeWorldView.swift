@@ -563,7 +563,7 @@ struct OnMoonCharacterView: View {
                         Text(emoji)
                             .font(.system(size: 12))
                             .opacity(0.85)
-                            .offset(y: -10)   // ✅ close to head
+                            .offset( y: 0)
                     }
                 }
                 .overlay(alignment: .topTrailing) {
@@ -571,7 +571,7 @@ struct OnMoonCharacterView: View {
                         Image(systemName: badge)
                             .foregroundStyle(.green)
                             .font(.system(size: 10))
-                            .offset(x: 6, y: -6)
+                            .offset(y: 0)
                     }
                 }
             }
