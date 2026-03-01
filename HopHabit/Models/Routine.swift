@@ -5,14 +5,12 @@ import SwiftData
 final class Routine {
     var id: UUID
     var name: String
-    var totalSeconds: Int       // Accumulated time in seconds
-    var goalHours: Int          // Default 10000 (the 10,000-hour rule)
+    var totalSeconds: Int
+    var goalHours: Int
     var createdAt: Date
 
-    // Computed goal in seconds
     var goalSeconds: Int { goalHours * 3600 }
 
-    // Progress fraction 0.0 – 1.0
     var progress: Double {
         min(Double(totalSeconds) / Double(goalSeconds), 1.0)
     }

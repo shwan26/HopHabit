@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-// MARK: - Time Entry
+
 
 @Model
 final class HabitTimeEntry {
@@ -24,15 +24,13 @@ final class HabitTimeEntry {
     var isRunning: Bool { endTime == nil }
 }
 
-// MARK: - Habit
-
 @Model
 final class Habit {
     var id: UUID
     var title: String
-    /// ISO weekday numbers (1=Sun … 7=Sat) when this habit is scheduled
+    
     var scheduledDays: [Int]
-    var completedDates: [Date]  // start-of-day dates where habit was done
+    var completedDates: [Date]
     var createdAt: Date
 
     @Relationship(deleteRule: .cascade) var timeEntries: [HabitTimeEntry] = []
@@ -45,7 +43,6 @@ final class Habit {
         self.createdAt = Date()
     }
 
-    // MARK: Completion
 
     func isCompleted(on date: Date) -> Bool {
         let day = Calendar.current.startOfDay(for: date)
@@ -71,51 +68,43 @@ final class Habit {
         return streak
     }
 
-    // MARK: Time Tracking
 
-    /// The currently running time entry for this habit, if any
     var activeEntry: HabitTimeEntry? {
         timeEntries.first { $0.isRunning }
     }
 
     var isTimerRunning: Bool { activeEntry != nil }
 
-    /// Start a new timer session
+
     func startTimer() {
         guard !isTimerRunning else { return }
         let entry = HabitTimeEntry(habitID: id)
         timeEntries.append(entry)
     }
 
-    /// Stop the currently running timer
     func stopTimer() {
         activeEntry?.endTime = Date()
     }
 
-    /// Total time spent today (seconds)
     var totalTimeToday: TimeInterval {
         timeEntries
             .filter { Calendar.current.isDateInToday($0.startTime) }
             .reduce(0) { $0 + $1.duration }
     }
 
-    /// Total time for a specific date (seconds)
     func totalTime(on date: Date) -> TimeInterval {
         timeEntries
             .filter { Calendar.current.isDate($0.startTime, inSameDayAs: date) }
             .reduce(0) { $0 + $1.duration }
     }
 
-    /// Total time across all entries (seconds)
     var totalTimeAllTime: TimeInterval {
         timeEntries.reduce(0) { $0 + $1.duration }
     }
 }
 
-// MARK: - Helpers
-
 extension TimeInterval {
-    /// Format as "1h 23m" or "45m" or "30s"
+
     var formatted: String {
         let totalSeconds = Int(self)
         let hours = totalSeconds / 3600

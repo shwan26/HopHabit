@@ -1,7 +1,5 @@
 import Foundation
 
-/// A collection of Grandpa's motivational quotes.
-/// In a full project, these could be loaded from GrandpaQuotes.json.
 enum GrandpaQuotes {
 
     static let all: [String] = [

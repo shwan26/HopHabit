@@ -1,26 +1,11 @@
 //
 //  Untitled.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 3/1/26.
-//
 
-//
-//  GratitudeJournal.swift
-//  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
-//  Contains:
-//  • JournalSession  – morning / afternoon / evening enum
-//  • GratitudeJournal – SwiftData model
-//  • JournalSheetView – sheet shown when tapping a calendar day
-//
 
 import SwiftUI
 import SwiftData
 
-// MARK: - JournalSession
 
 enum JournalSession: String, CaseIterable, Codable {
     case morning   = "morning"
@@ -45,7 +30,6 @@ enum JournalSession: String, CaseIterable, Codable {
         }
     }
 
-    /// Slot indices in the shared 3-slot arrays this session owns.
     var ownedSlots: [Int] {
         switch self {
         case .morning:   return [0, 1, 2]
@@ -63,18 +47,13 @@ enum JournalSession: String, CaseIterable, Codable {
     }
 }
 
-// MARK: - GratitudeJournal (SwiftData model)
-//
-// One row per (date, session).
-// thankfulItems and goodThingsItems are always 3-element arrays —
-// index 0 = morning slot, 1 = afternoon slot, 2 = evening slot.
 
 @Model
 final class GratitudeJournal {
     var date: Date
-    var session: String            // JournalSession.rawValue
-    var thankfulItems: [String]    // length 3
-    var goodThingsItems: [String]  // length 3
+    var session: String
+    var thankfulItems: [String]
+    var goodThingsItems: [String]
     var scheduledHour: Int
 
     init(date: Date, session: JournalSession) {
@@ -95,8 +74,6 @@ final class GratitudeJournal {
     }
 }
 
-// MARK: - JournalSheetView
-
 struct JournalSheetView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss)      private var dismiss
@@ -106,19 +83,19 @@ struct JournalSheetView: View {
 
     let date: Date
     let journals: [GratitudeJournal]
-    /// true → past day, permanently read-only
+    
     let isPastDay: Bool
 
     @State private var selectedSession: JournalSession = .morning
 
-    // Shared 3-slot state (0 = morning, 1 = afternoon, 2 = evening)
+    
     @State private var thankful:   [String] = ["", "", ""]
     @State private var goodThings: [String] = ["", "", ""]
     @State private var scheduledHour: Int = JournalSession.morning.defaultHour
     @State private var isSaving = false
     @State private var showPaddyToast = false
 
-    /// User must tap Edit to write; starts true when day has no content yet.
+   
     @State private var isEditing = false
 
     private var currentJournal: GratitudeJournal? {
@@ -157,7 +134,6 @@ struct JournalSheetView: View {
                     .padding()
                 }
 
-                // Paddy reward toast
                 if showPaddyToast {
                     VStack {
                         Spacer()
@@ -217,8 +193,6 @@ struct JournalSheetView: View {
             }
         }
     }
-
-    // MARK: - Sub-views
 
     private var dateHeader: some View {
         HStack(spacing: 6) {
@@ -349,8 +323,6 @@ struct JournalSheetView: View {
         }
         .padding(.top, 4)
     }
-
-    // MARK: - Logic
 
     private func mergeAllSessions() {
         var t = ["", "", ""]

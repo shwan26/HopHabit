@@ -1,11 +1,7 @@
 //
 //  HopHabitApp.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
 
-// HopHabitApp.swift
 import SwiftUI
 import SwiftData
 
@@ -17,11 +13,12 @@ struct HopHabitApp: App {
         }
         .modelContainer(for: [
             TaskItem.self,
-            Habit.self,       // ← already there
+            Habit.self,       
             Routine.self,
             SessionLog.self,
             ProgressState.self,
-            GratitudeJournal.self  // ← ADD THIS
+            GratitudeJournal.self,
+            MoodEntry.self
         ])
     }
 }

@@ -1,25 +1,10 @@
 //
 //  RewardCalculator.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
 
 import Foundation
 
-/// Central reward engine for HopHabit.
-///
-/// Dopamine mechanics:
-///   - Variable rice rolls (ranges, not fixed values)
-///   - 5% Moon Blessing rare drop on full-day completion
-///   - Daily login bonus (1 🌾)
-///   - Collectible rabbit skins unlocked by ProgressState.totalPracticeHours
-///   - Streak danger detection (after 8 PM, streak not continued today)
-///   - "Almost there" nudge when 1–2 items remain
-///   - Variable practice boost seconds
 struct RewardCalculator {
-
-    // MARK: - Rice Ranges
 
     static let taskRiceRange:     ClosedRange<Int> = 2...5
     static let habitRiceRange:    ClosedRange<Int> = 4...7
@@ -27,23 +12,19 @@ struct RewardCalculator {
     static let loginBonus:        Int              = 1
     static let journalPaddyReward: Int             = 1
 
-    // MARK: - Moon Blessing
-
     static let moonBlessingChance: Double          = 0.05
     static let moonBlessingRange:  ClosedRange<Int> = 10...20
 
-    // MARK: - Rabbit Constants
 
     static let rabbitStepsPerDay: Int = 1
     static let totalMoonSteps:    Int = 28
 
-    // MARK: - Practice Boost
+  
 
     static let practiceBoostMinSeconds: Int          = 5 * 60
     static let practiceBoostRange:      ClosedRange<Int> = 8...15
 
-    // MARK: - Collectible Rabbit Skins
-    // Unlocked by ProgressState.totalPracticeHours
+
 
     struct RabbitSkin {
         let name:          String
@@ -93,8 +74,6 @@ struct RewardCalculator {
         }
     }
 
-    /// True when the streak is at risk: after 8 PM and today hasn't been completed yet.
-    /// Uses ProgressState.lastCompletedDay (the real field name).
     static func isStreakInDanger(streak: Int, lastCompletedDay: Date?) -> Bool {
         guard streak > 0 else { return false }
         let hour = Calendar.current.component(.hour, from: Date())
@@ -102,8 +81,6 @@ struct RewardCalculator {
         guard let last = lastCompletedDay else { return true }
         return !Calendar.current.isDateInToday(last)
     }
-
-    // MARK: - Core Reward Calculation
 
     static func calculateReward(
         completedTasks:  Int,
@@ -142,7 +119,6 @@ struct RewardCalculator {
         )
     }
 
-    /// Convenience total — used in places that only need the number.
     static func riceEarned(
         completedTasks:  Int,
         totalTasks:      Int,
@@ -158,28 +134,21 @@ struct RewardCalculator {
         ).totalRice
     }
 
-    // MARK: - Journal Paddy
-
     static func shouldAwardJournalPaddy(thankfulSlots: [String], goodThingsSlots: [String]) -> Bool {
         let allT = thankfulSlots.prefix(3).allSatisfy   { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         let allG = goodThingsSlots.prefix(3).allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         return allT && allG
     }
 
-    // MARK: - Rabbit Movement
-
     static func advanceRabbit(current: Int) -> Int {
         (current + rabbitStepsPerDay) % totalMoonSteps
     }
-
-    // MARK: - Practice Boost (variable)
 
     static func rabbitBoost(forSessionSeconds s: Int) -> Int {
         s >= practiceBoostMinSeconds ? Int.random(in: practiceBoostRange) : 0
     }
 
-    // MARK: - Almost There Nudge
-
+   
     static func almostThereMessage(
         completedTasks:  Int,
         totalTasks:      Int,
@@ -200,8 +169,6 @@ struct RewardCalculator {
         }
     }
 
-    // MARK: - Soft Streak Logic (uses ProgressState.lastCompletedDay)
-
     static func updatedStreak(current: Int, lastCompleted: Date?) -> Int {
         guard let last = lastCompleted else { return 1 }
         let cal        = Calendar.current
@@ -216,8 +183,6 @@ struct RewardCalculator {
         }
     }
 
-    // MARK: - Completion Fraction
-
     static func completionFraction(
         completedTasks:  Int,
         totalTasks:      Int,
@@ -229,8 +194,6 @@ struct RewardCalculator {
         return min(1.0, Double(completedTasks + completedHabits) / Double(total))
     }
 }
-
-// MARK: - RewardResult
 
 struct RewardResult {
     let taskRice:        Int

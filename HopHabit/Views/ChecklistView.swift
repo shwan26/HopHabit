@@ -1,9 +1,6 @@
 //
 //  ChecklistView.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
 
 import SwiftUI
 import SwiftData
@@ -19,7 +16,7 @@ struct ChecklistView: View {
     @State private var showAddHabit = false
     @State private var newHabitTitle = ""
     @State private var showTimeChart = false
-    @State private var timerTick = Date()  // Forces UI refresh every second
+    @State private var timerTick = Date()
     @State private var showDemoBanner = false
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -40,7 +37,6 @@ struct ChecklistView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Tasks section
                         SectionHeader(title: "Today's Tasks", icon: "checkmark.square.fill", color: .purple)
 
                         ForEach(todayTasks) { task in
@@ -51,7 +47,6 @@ struct ChecklistView: View {
                             }
                         }
 
-                        // Add task input
                         HStack {
                             TextField("Add a task…", text: $newTaskTitle)
                                 .textFieldStyle(.plain)
@@ -69,7 +64,6 @@ struct ChecklistView: View {
                             .disabled(newTaskTitle.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
 
-                        // Habits section header with chart button
                         HStack {
                             SectionHeader(title: "Daily Habits", icon: "repeat.circle.fill", color: .indigo)
                             Spacer()
@@ -100,7 +94,6 @@ struct ChecklistView: View {
                             }
                         }
 
-                        // Add habit button
                         Button(action: { showAddHabit = true }) {
                             Label("Add Habit", systemImage: "plus.circle")
                                 .font(.subheadline)
@@ -111,7 +104,6 @@ struct ChecklistView: View {
                     .padding()
                 }
 
-                // Demo loaded banner
                 if showDemoBanner {
                     VStack {
                         Spacer()
@@ -181,7 +173,6 @@ struct ChecklistView: View {
                 HabitTimeChartView(habits: habits)
             }
             .onReceive(timer) { date in
-                // Only refresh if any timer is running
                 if habits.contains(where: { $0.isTimerRunning }) {
                     timerTick = date
                 }
@@ -197,8 +188,6 @@ struct ChecklistView: View {
         newTaskTitle = ""
     }
 }
-
-// MARK: - Task Row
 
 struct TaskRow: View {
     let task: TaskItem
@@ -230,11 +219,9 @@ struct TaskRow: View {
     }
 }
 
-// MARK: - Habit Row
-
 struct HabitRow: View {
     let habit: Habit
-    let tick: Date  // Used to trigger redraws while timer is running
+    let tick: Date
     let onToggle: () -> Void
     let onTimerToggle: () -> Void
     let onDelete: () -> Void
@@ -264,20 +251,18 @@ struct HabitRow: View {
                         Text("⏱ \(habit.totalTimeToday.formatted)")
                             .font(.caption2)
                             .foregroundStyle(habit.isTimerRunning ? .orange : .white.opacity(0.5))
-                            .id(tick)  // Forces redraw on tick
+                            .id(tick)
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Timer toggle button
             Button(action: onTimerToggle) {
                 Image(systemName: habit.isTimerRunning ? "stop.circle.fill" : "play.circle.fill")
                     .font(.title3)
                     .foregroundStyle(habit.isTimerRunning ? .orange : .white.opacity(0.35))
             }
 
-            // Delete button
             Button {
                 showDeleteConfirm = true
             } label: {
@@ -302,8 +287,6 @@ struct HabitRow: View {
         .animation(.easeInOut(duration: 0.2), value: habit.isTimerRunning)
     }
 }
-
-// MARK: - Habit Time Chart
 
 struct HabitTimeChartView: View {
     let habits: [Habit]
@@ -350,7 +333,6 @@ struct HabitTimeChartView: View {
         .sorted { $0.minutes > $1.minutes }
     }
 
-    // Per-day breakdown for the past N days
     struct DayEntry: Identifiable {
         let id = UUID()
         let date: Date
@@ -401,7 +383,6 @@ struct HabitTimeChartView: View {
                         .pickerStyle(.segmented)
                         .padding(.horizontal)
 
-                        // Summary card
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Total Time")
@@ -435,7 +416,7 @@ struct HabitTimeChartView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.top, 40)
                         } else {
-                            // Bar chart: time per habit
+                            
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Time Per Habit")
                                     .font(.headline)
@@ -489,7 +470,6 @@ struct HabitTimeChartView: View {
                                 .padding(.horizontal)
                             }
 
-                            // Stacked line chart: time by day
                             if selectedRange != .today && !dailyData.isEmpty {
                                 VStack(alignment: .leading, spacing: 10) {
                                     Text("Daily Breakdown")
@@ -533,7 +513,6 @@ struct HabitTimeChartView: View {
                                 }
                             }
 
-                            // Rank list
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Ranking")
                                     .font(.headline)
@@ -579,13 +558,10 @@ struct HabitTimeChartView: View {
         }
     }
 
-    // Distinct colors for different habits in the stacked chart
     private var habitColorGradients: [Color] {
         [.indigo, .purple, .cyan, .teal, .mint, .blue, .pink]
     }
 }
-
-// MARK: - Add Habit Sheet
 
 struct AddHabitSheet: View {
     @Binding var isPresented: Bool
@@ -648,8 +624,6 @@ struct AddHabitSheet: View {
         isPresented = false
     }
 }
-
-// MARK: - Section Header
 
 struct SectionHeader: View {
     let title: String

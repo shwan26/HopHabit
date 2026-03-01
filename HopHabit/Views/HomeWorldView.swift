@@ -6,8 +6,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Particles
-
 struct FallingStar: Identifiable {
     let id      = UUID()
     let startX  = CGFloat.random(in: 30...360)
@@ -26,8 +24,6 @@ struct RiceGrain: Identifiable {
     let rotation = Double.random(in: 0...360)
 }
 
-// MARK: - HomeWorldView
-
 struct HomeWorldView: View {
     @Environment(\.modelContext) private var context
     @Query private var progressStates: [ProgressState]
@@ -44,14 +40,9 @@ struct HomeWorldView: View {
     @State private var flyingGrains: [RiceGrain]   = []
     @State private var moonShake          = false
 
-    // Demo mode
+   
     @State private var showDemoBanner     = false
     @State private var isDemoLoading      = false
-
-    // ── FIXED: state is now an @State var, initialized safely in .onAppear
-    //    Never call context.insert() inside a computed property — SwiftUI
-    //    re-evaluates computed vars on every render, which would create
-    //    duplicate ProgressState objects and never persist any of them.
     @State private var progressState: ProgressState? = nil
 
     private var state: ProgressState? { progressState }
@@ -141,15 +132,13 @@ struct HomeWorldView: View {
             }
             .navigationTitle("")
         }
-        // ── FIXED: create ProgressState here, once, safely on the main actor
+        
         .onAppear { ensureProgressState() }
-        // ── Keep @State in sync if the query result changes (e.g. after iCloud sync)
+        
         .onChange(of: progressStates) { _, states in
             if progressState == nil { progressState = states.first }
         }
     }
-
-    // MARK: ── Ensure ProgressState exists ───────────────────────────────────
 
     private func ensureProgressState() {
         if let existing = progressStates.first {
@@ -157,12 +146,10 @@ struct HomeWorldView: View {
         } else {
             let s = ProgressState()
             context.insert(s)
-            try? context.save()   // ← persist immediately so it survives a kill
+            try? context.save()
             progressState = s
         }
     }
-
-    // MARK: ── Header ─────────────────────────────────────────────────────
 
     private var headerView: some View {
         HStack(alignment: .center) {
@@ -176,7 +163,6 @@ struct HomeWorldView: View {
             }
             Spacer()
 
-            // 🎬 Demo button — always visible in header
             Menu {
                 Button { loadDemo() } label: {
                     Label("Load Demo Day", systemImage: "play.rectangle.fill")
@@ -203,8 +189,6 @@ struct HomeWorldView: View {
                 )
                 .shadow(color: Color(r: 100, g: 60, b: 220).opacity(0.45), radius: 6, y: 2)
             }
-
-            // Rice badge
             HStack(spacing: 6) {
                 Text("🌾").font(.system(size: 18))
                 Text("\(state?.totalRiceEarned ?? 0)")
@@ -223,8 +207,6 @@ struct HomeWorldView: View {
         }
         .padding(.horizontal, 22).padding(.top, 16).padding(.bottom, 8)
     }
-
-    // MARK: ── Moon Scene ──────────────────────────────────────────────────
 
     private let moonSize: CGFloat = 240
 
@@ -277,8 +259,6 @@ struct HomeWorldView: View {
         }
         .frame(height: 340)
     }
-
-    // MARK: ── Info Cards ──────────────────────────────────────────────────
 
     private var infoCards: some View {
         HStack(spacing: 12) {
@@ -364,8 +344,6 @@ struct HomeWorldView: View {
         )
     }
 
-    // MARK: ── Complete Day Button ─────────────────────────────────────────
-
     private var completeDayButton: some View {
         let completed = state?.isTodayCompleted == true
         return Button(action: completeDay) {
@@ -397,8 +375,6 @@ struct HomeWorldView: View {
         .disabled(completed)
     }
 
-    // MARK: ── Quote Banner ────────────────────────────────────────────────
-
     private var quoteBanner: some View {
         VStack {
             HStack(alignment: .top, spacing: 10) {
@@ -428,8 +404,6 @@ struct HomeWorldView: View {
             Spacer()
         }
     }
-
-    // MARK: ── Interactions ────────────────────────────────────────────────
 
     private func tapMoon() {
         withAnimation(.default) { moonShake = true }
@@ -461,8 +435,6 @@ struct HomeWorldView: View {
         }
     }
 
-    // MARK: ── Demo Mode ───────────────────────────────────────────────────
-
     private func loadDemo() {
         guard !isDemoLoading else { return }
         isDemoLoading = true
@@ -480,8 +452,6 @@ struct HomeWorldView: View {
         progressState = nil
     }
 
-    // MARK: ── Complete Day ────────────────────────────────────────────────
-
     private func completeDay() {
         guard let s = state, !s.isTodayCompleted else { return }
 
@@ -495,10 +465,10 @@ struct HomeWorldView: View {
         s.softStreak    = RewardCalculator.updatedStreak(current: s.softStreak, lastCompleted: s.lastCompletedDay)
         s.longestStreak = max(s.longestStreak, s.softStreak)
         s.lastCompletedDay = Date()
-        // ── FIXED: save streak + lastCompletedDay immediately so they survive a kill
+        
         try? context.save()
 
-        // Animate rabbit hop
+       
         let newPos = RewardCalculator.advanceRabbit(current: s.rabbitPosition)
         withAnimation(.easeInOut(duration: 0.6)) { rabbitAnimProgress = 1.0 }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
@@ -507,7 +477,7 @@ struct HomeWorldView: View {
             try? context.save()   // ← save new position
         }
 
-        // Rice grain animation
+        
         for i in 0..<min(rice, 14) {
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.07) {
                 let g = RiceGrain()
@@ -518,7 +488,7 @@ struct HomeWorldView: View {
             }
         }
 
-        // ── FIXED: save rice count immediately, not inside a nested asyncAfter
+       
         s.totalRiceEarned += rice
         try? context.save()
 
@@ -534,7 +504,6 @@ struct HomeWorldView: View {
     }
 }
 
-// MARK: - PixelMoonView
 
 struct PixelMoonView: View {
     let shake: Bool
@@ -560,8 +529,6 @@ struct PixelMoonView: View {
     }
 }
 
-// MARK: - MoonDiscView
-
 struct MoonDiscView: View {
     let illumination: Double
     var body: some View {
@@ -577,8 +544,6 @@ struct MoonDiscView: View {
         .overlay(Circle().stroke(.white.opacity(0.25), lineWidth: 1))
     }
 }
-
-// MARK: - OnMoonCharacterView
 
 struct OnMoonCharacterView: View {
     let imageName: String
@@ -608,18 +573,18 @@ struct OnMoonCharacterView: View {
     }
 
     var body: some View {
-        // where the sprite’s CENTER should be (so its bottom touches the rim)
+       
         let spriteCenter = CGPoint(x: rimPoint.x, y: rimPoint.y - spriteSize / 2)
 
         ZStack {
-            // contact shadow at the rim
+           
             Capsule()
                 .fill(Color.black.opacity(0.25))
                 .frame(width: spriteSize * 0.35, height: 6)
                 .position(x: rimPoint.x, y: rimPoint.y + 2)
                 .blur(radius: 1.2)
 
-            // sprite + emoji bubble grouped together so they move together
+            
             ZStack {
                 Group {
                     if UIImage(named: imageName) != nil {
@@ -658,8 +623,6 @@ struct OnMoonCharacterView: View {
         .frame(width: moonSize, height: moonSize)
     }
 }
-
-// MARK: - GrowingRiceBowl
 
 struct RiceTier {
     let emoji: String; let label: String; let color: Color
@@ -738,8 +701,6 @@ struct GrowingRiceBowl: View {
     }
 }
 
-// MARK: - Particle Views
-
 struct FallingStarView: View {
     let star: FallingStar
     let containerHeight: CGFloat
@@ -779,8 +740,6 @@ struct FlyingRiceGrainView: View {
     }
 }
 
-// MARK: - Stars
-
 struct StarsView: View {
     private static let data: [(CGFloat, CGFloat, CGFloat, Double)] = {
         var rng = SeededRandom(seed: 42)
@@ -800,8 +759,6 @@ struct StarsView: View {
     }
 }
 
-// MARK: - SummaryTile
-
 struct SummaryTile: View {
     let value: String; let label: String; let icon: String
     var body: some View {
@@ -812,8 +769,6 @@ struct SummaryTile: View {
         .frame(maxWidth: .infinity)
     }
 }
-
-// MARK: - CelebrationOverlay
 
 struct CelebrationOverlay: View {
     let riceEarned: Int
@@ -845,15 +800,11 @@ struct CelebrationOverlay: View {
     }
 }
 
-// MARK: - Color convenience
-
 extension Color {
     init(r: Double, g: Double, b: Double, a: Double = 1) {
         self.init(.sRGB, red: r/255, green: g/255, blue: b/255, opacity: a)
     }
 }
-
-// MARK: - SeededRandom
 
 private struct SeededRandom {
     private var state: UInt64

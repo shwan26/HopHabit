@@ -1,16 +1,10 @@
 //
 //  MoonPhaseProvider.swift
 //  HopHabit
-//
-//  Calculates the approximate lunar phase for a given date using
-//  a simple synodic-period algorithm (accurate to ±1 day).
-//
 
 import Foundation
 
 enum MoonPhaseProvider {
-
-    // MARK: - Phase enum
 
     enum Phase: String, CaseIterable {
         case newMoon        = "New Moon"
@@ -36,8 +30,6 @@ enum MoonPhaseProvider {
         }
 
         var name: String { rawValue }
-
-        /// Approximate lunar illumination fraction (0.0 – 1.0), used for MoonDiscView.
         var illumination: Double {
             switch self {
             case .newMoon:        return 0.0
@@ -52,19 +44,14 @@ enum MoonPhaseProvider {
         }
     }
 
-    // MARK: - Public API
-
-    /// Returns the moon phase for today.
     static func phase() -> Phase {
         phase(for: Date())
     }
 
-    /// Returns the moon phase for any given date.
     static func phase(for date: Date) -> Phase {
-        // Known new moon reference: Jan 6 2000 at 18:14 UTC
         let referenceDate = Date(timeIntervalSince1970: 947_182_440)
-        let synodicPeriod = 29.53058868   // days
-        let elapsed = date.timeIntervalSince(referenceDate) / 86_400  // days
+        let synodicPeriod = 29.53058868
+        let elapsed = date.timeIntervalSince(referenceDate) / 86_400
         var age = elapsed.truncatingRemainder(dividingBy: synodicPeriod)
         if age < 0 { age += synodicPeriod }
 

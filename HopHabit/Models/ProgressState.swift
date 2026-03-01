@@ -1,9 +1,6 @@
 //
 //  ProgressState.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
 
 import Foundation
 import SwiftData
@@ -16,8 +13,6 @@ final class ProgressState {
         var lastCompletedDay: Date?
         var softStreak: Int = 0
         var longestStreak: Int = 0
-
-        // ✅ IMPORTANT: default at declaration (not only in init)
         var totalPracticeHours: Double = 0
 
         var lastLoginDate: Date?
@@ -33,7 +28,6 @@ final class ProgressState {
         self.lastLoginDate       = nil
     }
 
-    /// Whether today has already been completed
     var isTodayCompleted: Bool {
         guard let last = lastCompletedDay else { return false }
         return Calendar.current.isDateInToday(last)

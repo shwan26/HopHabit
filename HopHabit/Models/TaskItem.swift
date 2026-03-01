@@ -6,7 +6,7 @@ final class TaskItem {
     var id: UUID
     var title: String
     var isCompleted: Bool
-    var date: Date          // The day this task belongs to
+    var date: Date         
     var createdAt: Date
 
     init(title: String, date: Date = Date()) {

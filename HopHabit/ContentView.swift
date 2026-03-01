@@ -1,9 +1,6 @@
 //
 //  ContentView.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
 
 
 import SwiftUI
@@ -15,7 +12,6 @@ struct ContentView: View {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
 
-        // Your tab bar background
         appearance.backgroundColor = UIColor(named: "AccentMoon") ?? .black
 
         // Selected tab icon + text color (VISIBLE)
@@ -24,7 +20,6 @@ struct ContentView: View {
             .foregroundColor: UIColor.white
         ]
 
-        // Unselected tab icon + text color
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor.white.withAlphaComponent(0.6)
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor.white.withAlphaComponent(0.6)

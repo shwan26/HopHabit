@@ -1,15 +1,9 @@
 //
 //  RoutineTrackerView.swift
 //  HopHabit
-//
-//  Created by Giyu Tomioka on 2/28/26.
-//
 
 import SwiftUI
 import SwiftData
-
-// MARK: - Pomodoro Mode
-
 enum PomodoroMode: String, CaseIterable {
     case off        = "Free"
     case classic    = "Classic"
@@ -56,7 +50,6 @@ enum PomodoroPhase {
     var color: Color  { self == .work ? .purple : .green }
 }
 
-// MARK: - Burst Particle
 
 private struct BurstParticle: Identifiable {
     let id     = UUID()
@@ -67,7 +60,6 @@ private struct BurstParticle: Identifiable {
     let symbol: String
 }
 
-// MARK: - RoutineTrackerView
 
 struct RoutineTrackerView: View {
     @Environment(\.modelContext) private var context
@@ -80,23 +72,22 @@ struct RoutineTrackerView: View {
     @State private var isRunning      = false
     @State private var elapsedSeconds = 0
     @State private var timerTask: Task<Void, Never>?
+    @State private var screenSize: CGSize = .zero
 
-    // Pomodoro
+  
     @State private var pomodoroMode:       PomodoroMode  = .off
     @State private var pomodoroPhase:      PomodoroPhase = .work
     @State private var pomodoroSecondsLeft = 0
     @State private var pomodoroCount       = 0
 
-    // Sheets / alerts
+ 
     @State private var showAddRoutine  = false
     @State private var newRoutineName  = ""
     @State private var routineToDelete: Routine?
     @State private var showDeleteAlert = false
-
-    // Motivation
+ 
     @State private var showMotivation  = true
 
-    // Dopamine states
     @State private var showBoostToast    = false
     @State private var boostAmount       = 0
     @State private var showSkinToast     = false
@@ -127,7 +118,7 @@ struct RoutineTrackerView: View {
                                 if showMotivation && routine.totalHours < 1 {
                                     motivationBanner
                                 }
-                                // Almost-there nudge (pomodoro milestone approach)
+                               
                                 if showAlmostThere {
                                     almostThereBanner
                                         .transition(.opacity.combined(with: .scale(scale: 0.97)))
@@ -139,9 +130,13 @@ struct RoutineTrackerView: View {
                         }
                     }
                     .padding()
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.onAppear { screenSize = geo.size }
+                        }
+                    )
                 }
 
-                // Burst particles overlay
                 ForEach(particles) { p in
                     Text(p.symbol)
                         .font(.caption)
@@ -150,7 +145,6 @@ struct RoutineTrackerView: View {
                         .scaleEffect(p.scale)
                 }
 
-                // Variable rabbit boost toast
                 if showBoostToast {
                     VStack {
                         Spacer()
@@ -175,7 +169,6 @@ struct RoutineTrackerView: View {
                     .zIndex(1)
                 }
 
-                // Skin unlock toast
                 if showSkinToast, let skin = newSkinUnlock {
                     VStack {
                         Spacer()
@@ -202,7 +195,6 @@ struct RoutineTrackerView: View {
                     .zIndex(2)
                 }
 
-                // Demo loaded banner
                 if showDemoBanner {
                     VStack {
                         Spacer()
@@ -233,7 +225,6 @@ struct RoutineTrackerView: View {
                     Menu {
                         Button {
                             DemoManager.loadDemo(context: context)
-                            // Auto-select the demo routine
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 selectedRoutine = routines.first
                             }
@@ -282,8 +273,6 @@ struct RoutineTrackerView: View {
             }
         }
     }
-
-    // MARK: - Sub-views
 
     private var emptyState: some View {
         VStack(spacing: 12) {
@@ -363,7 +352,6 @@ struct RoutineTrackerView: View {
                 }
             }
 
-            // Progress bar with milestone ticks
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 6)
@@ -391,7 +379,6 @@ struct RoutineTrackerView: View {
                     .foregroundStyle(.purple)
                 Spacer()
                 if remaining > 0 {
-                    // Show progress to next skin unlock
                     if let next = nextSkin {
                         Text(String(format: "%.0fh to %@", next.unlockHours - hours, next.emoji))
                             .font(.caption2)
@@ -610,9 +597,7 @@ struct RoutineTrackerView: View {
         .padding(20)
         .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
         .onChange(of: elapsedSeconds) { _, newValue in
-            // Pulse save button every 5 minutes
             if newValue % 300 == 0 && newValue > 0 { pulseSaveButton() }
-            // Almost-there nudge 5 min before a pomodoro milestone
             checkAlmostThere(newValue)
         }
     }
@@ -694,7 +679,6 @@ struct RoutineTrackerView: View {
         }
     }
 
-    // MARK: - Timer Logic
 
     private func toggleTimer() {
         isRunning ? stopTimer() : startTimer()
@@ -746,7 +730,6 @@ struct RoutineTrackerView: View {
         guard let routine = selectedRoutine, elapsedSeconds > 0 else { return }
         let sessionSeconds = elapsedSeconds
 
-        // Snapshot skin before adding hours — for unlock detection
         let hoursBefore = routine.totalHours
         let skinBefore  = RewardCalculator.currentSkin(forHours: hoursBefore)
 
@@ -754,7 +737,6 @@ struct RoutineTrackerView: View {
         context.insert(log)
         routine.addSeconds(sessionSeconds)
 
-        // Update ProgressState.totalPracticeHours (sum of all routines)
         if let s = state {
             s.totalPracticeHours = routines.reduce(0) { $0 + $1.totalHours }
         }
@@ -766,7 +748,6 @@ struct RoutineTrackerView: View {
         withAnimation { showAlmostThere = false }
         try? context.save()
 
-        // Check for new skin unlock
         let hoursAfter = routine.totalHours
         let skinAfter  = RewardCalculator.currentSkin(forHours: hoursAfter)
         if skinAfter.unlockHours > skinBefore.unlockHours {
@@ -779,7 +760,6 @@ struct RoutineTrackerView: View {
             }
         }
 
-        // Variable rabbit boost (random 8–15s)
         let boost = RewardCalculator.rabbitBoost(forSessionSeconds: sessionSeconds)
         if boost > 0 {
             boostAmount = boost
@@ -806,9 +786,6 @@ struct RoutineTrackerView: View {
         }
     }
 
-    // MARK: - Dopamine Helpers
-
-    /// Pulses the save button with a spring bounce — called every 5 minutes while paused.
     private func pulseSaveButton() {
         withAnimation(.interpolatingSpring(stiffness: 500, damping: 8)) { saveButtonScale = 1.15 }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
@@ -816,9 +793,8 @@ struct RoutineTrackerView: View {
         }
     }
 
-    /// 🌾⭐️✨ particle burst from screen center when a session is saved.
     private func triggerParticleBurst() {
-        let center = CGPoint(x: UIScreen.main.bounds.width / 2, y: 400)
+        let center = CGPoint(x: screenSize.width / 2, y: 400)
         let symbols = ["🌾", "⭐️", "✨"]
         var newP: [BurstParticle] = []
         for i in 0..<12 {
@@ -837,7 +813,6 @@ struct RoutineTrackerView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { particles = [] }
     }
 
-    /// Shows "almost there" nudge 5 minutes before a round pomodoro milestone.
     private func checkAlmostThere(_ seconds: Int) {
         guard pomodoroMode != .off && isRunning && pomodoroPhase == .work else { return }
         let elapsed = seconds / 60
@@ -850,8 +825,6 @@ struct RoutineTrackerView: View {
             return
         }
     }
-
-    // MARK: - Formatters
 
     private func formatTime(_ seconds: Int) -> String {
         let h = seconds / 3600; let m = (seconds % 3600) / 60; let s = seconds % 60

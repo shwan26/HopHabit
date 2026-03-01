@@ -1,31 +1,12 @@
 //
 //  DemoManager.swift
 //  HopHabit
-//
-//  Demo Mode: one tap populates every view with realistic data so judges
-//  see the full app experience immediately — no manual setup required.
-//
-//  What it seeds:
-//   • 5 Habits (Meditation, Hydration, Stretching, Deep Study, Cold Shower)
-//     all marked complete for today + 6 prior days (to build streak)
-//   • 5 TaskItems for today, 4 of 5 already completed
-//   • 1 Routine (Piano Practice) with 47.3 hours logged
-//     + 3 recent SessionLogs so "Recent Sessions" shows data
-//   • GratitudeJournal for today (morning) — all 6 slots filled
-//   • ProgressState: 14-day softStreak, longestStreak 21, 127 rice,
-//     totalPracticeHours 47.3, lastCompletedDay = yesterday (so
-//     "Complete Day" is live), lastLoginDate = nil (triggers login bonus)
-//
-//  Call loadDemo(context:) once; it's idempotent — bails early if demo
-//  data already exists (checks for a task titled "🎯 Demo: Morning Meditation").
-//
 
 import Foundation
 import SwiftData
 
 struct DemoManager {
 
-    // MARK: - Public entry point
 
     @MainActor
     static func loadDemo(context: ModelContext) {
@@ -40,7 +21,6 @@ struct DemoManager {
         let cal   = Calendar.current
         let today = cal.startOfDay(for: Date())
 
-        // ── ProgressState ──────────────────────────────────────────────────
         var stateDesc = FetchDescriptor<ProgressState>()
         stateDesc.fetchLimit = 1
         let states   = (try? context.fetch(stateDesc)) ?? []
@@ -54,10 +34,8 @@ struct DemoManager {
         state.totalPracticeHours  = 47.3
         // Yesterday — so "Complete Day" button is live today
         state.lastCompletedDay    = cal.date(byAdding: .day, value: -1, to: today)
-        // nil → triggers the daily login bonus toast on HomeWorldView
         state.lastLoginDate       = nil
 
-        // ── Habits ────────────────────────────────────────────────────────
         let habitDefs: [(title: String, emoji: String)] = [
             ("🧘 Meditation",     "meditation"),
             ("💧 Hydration",      "hydration"),
@@ -65,7 +43,6 @@ struct DemoManager {
             ("📖 Deep Study",     "study"),
             ("🚿 Cold Shower",    "shower"),
         ]
-        let weekday = cal.component(.weekday, from: today)
 
         for def in habitDefs {
             let habit = Habit(title: def.title, scheduledDays: [1,2,3,4,5,6,7])
@@ -78,14 +55,13 @@ struct DemoManager {
             }
         }
 
-        // ── Tasks ─────────────────────────────────────────────────────────
-        // Use the special sentinel title only for the first task (idempotency check)
+
         let taskDefs: [(title: String, done: Bool)] = [
             ("🎯 Demo: Morning Meditation",  true),
             ("📝 Write project proposal",    true),
             ("📧 Reply to team emails",      true),
             ("🏃 Evening run",               true),
-            ("🌙 Plan tomorrow's tasks",     false),   // one left → triggers almost-there nudge
+            ("🌙 Plan tomorrow's tasks",     false),
         ]
         for def in taskDefs {
             let task = TaskItem(title: def.title, date: today)
@@ -93,9 +69,8 @@ struct DemoManager {
             context.insert(task)
         }
 
-        // ── Routine + SessionLogs ─────────────────────────────────────────
         let routine = Routine(name: "Piano Practice", goalHours: 1000)
-        // 47.3 h = 170 280 s
+   
         routine.addSeconds(170_280)
         context.insert(routine)
 
@@ -112,7 +87,6 @@ struct DemoManager {
             context.insert(entry)
         }
 
-        // ── GratitudeJournal ──────────────────────────────────────────────
         let journal = GratitudeJournal(date: today, session: .morning)
         journal.thankfulItems   = ["My health and energy 🌿",
                                    "A supportive community 🤝",
@@ -122,11 +96,25 @@ struct DemoManager {
                                    "I chose growth over comfort 🌱"]
         context.insert(journal)
 
-        // ── Persist ───────────────────────────────────────────────────────
+        let moodPattern: [MoodType] = [
+            .happy,    // today
+            .happy,    // yesterday
+            .neutral,  // 2 days ago
+            .sad,      // 3 days ago — rough day
+            .neutral,  // 4 days ago — recovering
+            .happy,    // 5 days ago
+            .happy,    // 6 days ago
+        ]
+
+        for (offset, mood) in moodPattern.enumerated() {
+            guard let day = cal.date(byAdding: .day, value: -offset, to: today) else { continue }
+            let entry = MoodEntry(date: day, mood: mood)
+            context.insert(entry)
+        }
+
+       
         try? context.save()
     }
-
-    // MARK: - Reset (clears ALL app data for a clean re-demo)
 
     @MainActor
     static func resetDemo(context: ModelContext) {
@@ -137,6 +125,7 @@ struct DemoManager {
         try? context.delete(model: SessionLog.self)
         try? context.delete(model: GratitudeJournal.self)
         try? context.delete(model: ProgressState.self)
+        try? context.delete(model: MoodEntry.self)
         try? context.save()
     }
 }
