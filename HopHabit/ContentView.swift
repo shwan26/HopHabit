@@ -14,7 +14,6 @@ struct ContentView: View {
 
         appearance.backgroundColor = UIColor(named: "AccentMoon") ?? .black
 
-        // Selected tab icon + text color (VISIBLE)
         appearance.stackedLayoutAppearance.selected.iconColor = .white
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .foregroundColor: UIColor.white

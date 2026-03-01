@@ -308,7 +308,6 @@ struct HabitTimeChartView: View {
         }
     }
 
-    // Data point for the chart
     struct HabitBarEntry: Identifiable {
         let id = UUID()
         let habitTitle: String

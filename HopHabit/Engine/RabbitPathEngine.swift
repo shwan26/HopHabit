@@ -8,7 +8,6 @@ import SwiftUI
 
 struct RabbitPathEngine {
 
-
     let orbitRadius: CGFloat
 
     let center: CGPoint

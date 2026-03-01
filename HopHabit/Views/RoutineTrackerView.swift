@@ -203,7 +203,7 @@ struct RoutineTrackerView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Demo Mode Active!")
                                     .font(.subheadline.bold()).foregroundStyle(.white)
-                                Text("Piano Practice loaded — 47h progress")
+                                Text("Piano Practice loaded: 47h progress")
                                     .font(.caption).foregroundStyle(.white.opacity(0.7))
                             }
                             Spacer()
@@ -568,7 +568,6 @@ struct RoutineTrackerView: View {
                         .font(.headline)
                 }
 
-                // Save button pulses every 5 minutes to draw attention
                 if !isRunning && elapsedSeconds > 0 {
                     Button(action: saveSession) {
                         Label("Save", systemImage: "checkmark.circle.fill")

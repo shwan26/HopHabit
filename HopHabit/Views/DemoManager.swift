@@ -47,7 +47,6 @@ struct DemoManager {
         for def in habitDefs {
             let habit = Habit(title: def.title, scheduledDays: [1,2,3,4,5,6,7])
             context.insert(habit)
-            // Mark complete today + 6 prior days → streak = 7
             for offset in 0...6 {
                 if let day = cal.date(byAdding: .day, value: -offset, to: today) {
                     habit.completedDates.append(cal.startOfDay(for: day))
@@ -75,9 +74,9 @@ struct DemoManager {
         context.insert(routine)
 
         let logDurations = [
-            (daysAgo: 0, seconds: 3_600),   // 1h today
-            (daysAgo: 1, seconds: 5_400),   // 1.5h yesterday
-            (daysAgo: 2, seconds: 2_700),   // 45 min
+            (daysAgo: 0, seconds: 3_600),
+            (daysAgo: 1, seconds: 5_400),
+            (daysAgo: 2, seconds: 2_700),
         ]
         for log in logDurations {
             let entry = SessionLog(routineID: routine.id, durationSeconds: log.seconds)
@@ -97,13 +96,13 @@ struct DemoManager {
         context.insert(journal)
 
         let moodPattern: [MoodType] = [
-            .happy,    // today
-            .happy,    // yesterday
-            .neutral,  // 2 days ago
-            .sad,      // 3 days ago — rough day
-            .neutral,  // 4 days ago — recovering
-            .happy,    // 5 days ago
-            .happy,    // 6 days ago
+            .happy,
+            .happy,
+            .neutral,
+            .sad,
+            .neutral,
+            .happy,
+            .happy,
         ]
 
         for (offset, mood) in moodPattern.enumerated() {
@@ -118,7 +117,7 @@ struct DemoManager {
 
     @MainActor
     static func resetDemo(context: ModelContext) {
-        // Delete everything in all model types
+        
         try? context.delete(model: TaskItem.self)
         try? context.delete(model: Habit.self)
         try? context.delete(model: Routine.self)

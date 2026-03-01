@@ -14,17 +14,11 @@ struct RewardCalculator {
 
     static let moonBlessingChance: Double          = 0.05
     static let moonBlessingRange:  ClosedRange<Int> = 10...20
-
-
     static let rabbitStepsPerDay: Int = 1
     static let totalMoonSteps:    Int = 28
 
-  
-
     static let practiceBoostMinSeconds: Int          = 5 * 60
     static let practiceBoostRange:      ClosedRange<Int> = 8...15
-
-
 
     struct RabbitSkin {
         let name:          String
@@ -51,8 +45,6 @@ struct RewardCalculator {
     static func nextSkin(forHours hours: Double) -> RabbitSkin? {
         rabbitSkins.first { hours < $0.unlockHours }
     }
-
-    // MARK: - Streak Tiers (variable bonus per tier)
 
     static func streakBonus(for streak: Int) -> Int {
         switch streak {
